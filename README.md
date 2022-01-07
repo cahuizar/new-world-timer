@@ -2,23 +2,12 @@
 
 ## Project setup
 ```
-npm install
+Install node.js and npm
+Install vuejs globally: npm install -g @vue/cli
+Navigate inside the solution at the root level and do: npm install
 ```
 
-### Compiles and hot-reloads for development
+### Run the solution
 ```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Navigate inside the solution at the root level and do: npm run serve
+On your browser navigate to: http://localhost:8080/
