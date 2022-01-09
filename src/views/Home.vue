@@ -41,62 +41,91 @@
                     <v-card-title>
                       <span class="text-h5">{{ formTitle }}</span>
                     </v-card-title>
+                    <validation-observer ref="observer" v-slot="{ invalid }">
+                      <form @submit.prevent="submit">
+                        <v-card-text>
+                          <v-container>
+                            <v-row>
+                              <v-col cols="12" sm="6" md="4">
+                                <validation-provider
+                                  v-slot="{ errors }"
+                                  name="Name"
+                                  rules="required"
+                                >
+                                  <v-text-field
+                                    outlined
+                                    v-model="editedItem.name"
+                                    label="Name *"
+                                    maxlength="20"
+                                    :error-messages="errors"
+                                  ></v-text-field>
+                                </validation-provider>
+                              </v-col>
+                              <v-col cols="12" sm="6" md="4">
+                                <validation-provider
+                                  v-slot="{ errors }"
+                                  name="Category"
+                                  rules="required"
+                                >
+                                  <v-text-field
+                                    outlined
+                                    v-model="editedItem.category"
+                                    label="Category *"
+                                    maxlength="10"
+                                    :error-messages="errors"
+                                  ></v-text-field>
+                                </validation-provider>
+                              </v-col>
+                              <v-col cols="12" sm="6" md="4">
+                                <validation-provider
+                                  v-slot="{ errors }"
+                                  name="Time remaining"
+                                  :rules="{
+                                    required: true,
+                                    regex: /^[0-9]?[0-9]:(2[0-3]|[01][0-9]):[0-5][0-9]$/,
+                                    is_not: '00:00:00',
+                                    length: 8
+                                  }"
+                                >
+                                  <v-text-field
+                                    label="Remaining *"
+                                    outlined
+                                    v-mask="'##:##:##'"
+                                    v-model="editedItem.timer.timeRemaining"
+                                    placeholder="DD:HH:MM"
+                                    :error-messages="errors"
+                                  />
+                                </validation-provider>
+                              </v-col>
+                              <v-col cols="12">
+                                <v-textarea
+                                  counter
+                                  maxlength="30"
+                                  label="Notes"
+                                  v-model="editedItem.notes"
+                                  auto-grow
+                                  outlined
+                                  rows="1"
+                                  row-height="15"
+                                ></v-textarea>
+                              </v-col>
+                            </v-row>
+                          </v-container>
+                        </v-card-text>
 
-                    <v-card-text>
-                      <v-container>
-                        <v-row>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field
-                              counter
-                              outlined
-                              v-model="editedItem.name"
-                              label="Name *"
-                              maxlength="20"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field
-                              counter
-                              outlined
-                              v-model="editedItem.category"
-                              label="Category *"
-                              maxlength="10"
-                            ></v-text-field>
-                          </v-col>
-                          <v-col cols="12" sm="6" md="4">
-                            <v-text-field
-                              label="Remaining *"
-                              outlined
-                              v-mask="'##:##:##'"
-                              v-model="editedItem.timer.timeRemaining"
-                              placeholder="DD:HH:MM"
-                            />
-                          </v-col>
-                          <v-col cols="12">
-                            <v-textarea
-                              counter
-                              maxlength="30"
-                              label="Notes"
-                              v-model="editedItem.notes"
-                              auto-grow
-                              outlined
-                              rows="1"
-                              row-height="15"
-                            ></v-textarea>
-                          </v-col>
-                        </v-row>
-                      </v-container>
-                    </v-card-text>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="blue darken-1" text @click="cancel">
-                        Cancel
-                      </v-btn>
-                      <v-btn color="blue darken-1" text @click="save">
-                        Save
-                      </v-btn>
-                    </v-card-actions>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn color="error" @click="cancel"> Cancel </v-btn>
+                          <v-btn
+                            color="success"
+                            type="submit"
+                            :disabled="invalid"
+                          >
+                            Save
+                          </v-btn>
+                        </v-card-actions>
+                      </form>
+                    </validation-observer>
                   </v-card>
                 </v-dialog>
                 <v-dialog v-model="dialogDelete" max-width="500px">
@@ -106,13 +135,8 @@
                     >
                     <v-card-actions>
                       <v-spacer></v-spacer>
-                      <v-btn color="blue darken-1" text @click="closeDelete"
-                        >Cancel</v-btn
-                      >
-                      <v-btn
-                        color="blue darken-1"
-                        text
-                        @click="deleteItemConfirm"
+                      <v-btn color="error" @click="closeDelete">Cancel</v-btn>
+                      <v-btn color="success" @click="deleteItemConfirm"
                         >OK</v-btn
                       >
                       <v-spacer></v-spacer>
@@ -161,7 +185,41 @@
 </template>
 
 <script>
+import { required, is_not, regex, length } from "vee-validate/dist/rules";
+import {
+  extend,
+  ValidationObserver,
+  ValidationProvider,
+  setInteractionMode,
+} from "vee-validate";
+setInteractionMode("eager");
+
+extend("required", {
+  ...required,
+  message: "{_field_} is required",
+});
+
+extend("is_not", {
+  ...is_not,
+  message: "{_field_} is invalid",
+});
+
+extend("regex", {
+  ...regex,
+  message: "{_field_} is invalid",
+});
+
+extend("length", {
+  ...length,
+  message: "{_field_} must be 8 characters long",
+});
+
+
 export default {
+  components: {
+    ValidationProvider,
+    ValidationObserver,
+  },
   data: () => ({
     dialog: false,
     dialogDelete: false,
@@ -231,6 +289,33 @@ export default {
   },
 
   methods: {
+    submit() {
+      this.editedItem.timer.start = new Date();
+      let endDate = new Date();
+      let timeSplit = this.editedItem.timer.timeRemaining
+        .split(":")
+        .map(Number);
+      endDate.setDate(endDate.getDate() + timeSplit[0]);
+      endDate.setHours(endDate.getHours() + timeSplit[1]);
+      endDate.setMinutes(endDate.getMinutes() + timeSplit[2]);
+      this.editedItem.timer.end = endDate;
+      if (this.editedIndex > -1) {
+        Object.assign(this.timers[this.editedIndex], this.editedItem);
+      } else {
+        this.timers.push(this.editedItem);
+      }
+      localStorage.timers = JSON.stringify(
+        this.timers.map((time) => ({
+          ...time,
+          timer: {
+            start: time.timer.start.getTime(),
+            end: time.timer.end.getTime(),
+            timeRemaining: time.timer.timeRemaining,
+          },
+        }))
+      );
+      this.close();
+    },
     editItem(item) {
       this.editedIndex = this.timers.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -325,34 +410,6 @@ export default {
         };
         this.editedIndex = -1;
       });
-    },
-
-    save() {
-      this.editedItem.timer.start = new Date();
-      let endDate = new Date();
-      let timeSplit = this.editedItem.timer.timeRemaining
-        .split(":")
-        .map(Number);
-      endDate.setDate(endDate.getDate() + timeSplit[0]);
-      endDate.setHours(endDate.getHours() + timeSplit[1]);
-      endDate.setMinutes(endDate.getMinutes() + timeSplit[2]);
-      this.editedItem.timer.end = endDate;
-      if (this.editedIndex > -1) {
-        Object.assign(this.timers[this.editedIndex], this.editedItem);
-      } else {
-        this.timers.push(this.editedItem);
-      }
-      localStorage.timers = JSON.stringify(
-        this.timers.map((time) => ({
-          ...time,
-          timer: {
-            start: time.timer.start.getTime(),
-            end: time.timer.end.getTime(),
-            timeRemaining: time.timer.timeRemaining,
-          },
-        }))
-      );
-      this.close();
     },
   },
 };
