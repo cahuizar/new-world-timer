@@ -17,6 +17,7 @@
           <v-data-table
             :headers="headers"
             :items="timers"
+            :search="search"
             sort-by="calories"
             class="elevation-1"
           >
@@ -24,12 +25,6 @@
               <v-toolbar
                 flat
               >
-                <v-toolbar-title>Favorites</v-toolbar-title>
-                <v-divider
-                  class="mx-4"
-                  inset
-                  vertical
-                ></v-divider>
                 <v-toolbar-title>All Items</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-dialog
@@ -44,7 +39,7 @@
                       v-bind="attrs"
                       v-on="on"
                     >
-                      New Item
+                      New Timer
                     </v-btn>
                   </template>
                   <v-card>
@@ -61,8 +56,11 @@
                             md="4"
                           >
                             <v-text-field
+                              counter
+                              outlined
                               v-model="editedItem.name"
-                              label="Name"
+                              label="Name *"
+                              maxlength="20"
                             ></v-text-field>
                           </v-col>
                           <v-col
@@ -71,8 +69,11 @@
                             md="4"
                           >
                             <v-text-field
+                              counter
+                              outlined
                               v-model="editedItem.category"
-                              label="Category"
+                              label="Category *"
+                              maxlength="10"
                             ></v-text-field>
                           </v-col>
                           <v-col
@@ -80,40 +81,18 @@
                             sm="6"
                             md="4"
                           >
-                            <v-datetime-picker label="Start Time" v-model="editedItem.timer.start"> </v-datetime-picker>
+                            <v-text-field
+                              label="Remaining *"
+                              outlined
+                              v-mask="'##:##:##'"
+                              v-model="editedItem.timer.timeRemaining"
+                              placeholder="DD:HH:MM"
+                            />
                           </v-col>
                           <v-col
                             cols="12"
-                            sm="6"
-                            md="4"
                           >
-                            <v-datetime-picker label="End Time" v-model="editedItem.timer.end"> </v-datetime-picker>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            sm="6"
-                          >
-                            Timer:
-                            <vue-countdown-timer
-                              :start-time="editedItem.timer.start"
-                              :end-time="editedItem.timer.end"
-                              :interval="1000"
-                              :start-label="'Until start'"
-                              label-position="begin"
-                              :end-text="'Available'"
-                              :seconds-txt="''">
-                              <template slot="end-text" slot-scope="scope">
-                                <span style="color: green">{{ scope.props.endText}}</span>
-                              </template>
-                              <template slot="countdown" slot-scope="scope">
-                                <span style="color: red">
-                                  <span>{{scope.props.days}} : </span>
-                                  <span>{{scope.props.hours}} : </span>
-                                  <span>{{scope.props.minutes}} : </span>
-                                  <span>{{scope.props.seconds}}</span>
-                                </span>
-                              </template>
-                            </vue-countdown-timer>
+                            <v-textarea counter maxlength="30" label="Notes" v-model="editedItem.notes" auto-grow outlined rows="1" row-height="15"></v-textarea>
                           </v-col>
                         </v-row>
                       </v-container>
@@ -203,6 +182,7 @@ export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
+    search: '',
     headers: [
       {
         text: 'Name',
@@ -212,6 +192,7 @@ export default {
       },
       { text: 'Category', value: 'category' },
       { text: 'CD Timer', value: 'timer' },
+      { text: 'Notes', value: 'notes', sortable: false },
       { text: 'Actions', value: 'actions', sortable: false },
     ],
     timers: [
@@ -222,22 +203,26 @@ export default {
       category: '',
       timer: {
         start: '',
-        end: ''
-      }
+        end: '',
+        timeRemaining: ''
+      },
+      notes: ''
     },
     defaultItem: {
       name: '',
       category: '',
       timer: {
         start: '',
-        end: ''
-      }
-    },
+        end: '',
+        timeRemaining: ''
+      },
+      notes: ''
+    }
   }),
 
   computed: {
     formTitle () {
-      return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+      return this.editedIndex === -1 ? 'New Timer' : 'Edit Timer'
     },
   },
 
@@ -259,7 +244,8 @@ export default {
         timer:
           {
             start: convertToDate(time.timer.start),
-            end: convertToDate(time.timer.end)
+            end: convertToDate(time.timer.end),
+            timeRemaining: time.timer.timeRemaining
           }
       }));
   },
@@ -284,7 +270,8 @@ export default {
           timer:
             {
               start: time.timer.start.getTime(),
-              end: time.timer.end.getTime()
+              end: time.timer.end.getTime(),
+              timeRemaining: time.timer.timeRemaining
             }
         })));
       this.closeDelete()
@@ -292,38 +279,82 @@ export default {
     cancel() {
       const convertToDate = a => new Date(a);
       let timers = JSON.parse(localStorage.timers);
-      console.log(timers);
       this.timers = timers.map(time => (
         { ...time,
           timer:
           {
             start: convertToDate(time.timer.start),
-            end: convertToDate(time.timer.end)
+            end: convertToDate(time.timer.end),
+            timeRemaining: time.timer.timeRemaining
           }
         }));
       this.dialog = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedItem = {
+          name: '',
+          category: '',
+          timer: {
+            start: '',
+            end: '',
+            timeRemaining: ''
+          },
+          notes: ''
+        };
         this.editedIndex = -1
       })
     },
     close () {
       this.dialog = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedItem = {
+          name: '',
+          category: '',
+          timer: {
+            start: '',
+            end: '',
+            timeRemaining: ''
+          },
+          notes: ''
+        };
         this.editedIndex = -1
       })
     },
 
     closeDelete () {
-      this.dialogDelete = false
+      this.dialogDelete = false;
+      this.editedItem = this.editedItem = {
+        name: '',
+        category: '',
+        timer: {
+          start: '',
+          end: '',
+          timeRemaining: ''
+        },
+        notes: ''
+      };
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedItem = this.editedItem = {
+          name: '',
+          category: '',
+          timer: {
+            start: '',
+            end: '',
+            timeRemaining: ''
+          },
+          notes: ''
+        };
         this.editedIndex = -1
       })
     },
 
     save () {
+      this.editedItem.timer.start = new Date();
+      let endDate = new Date();
+      let timeSplit = this.editedItem.timer.timeRemaining.split(":").map(Number);
+      endDate.setDate(endDate.getDate() + timeSplit[0]);
+      endDate.setHours(endDate.getHours() + timeSplit[1]);
+      endDate.setMinutes(endDate.getMinutes() + timeSplit[2]);
+      this.editedItem.timer.end = endDate;
       if (this.editedIndex > -1) {
         Object.assign(this.timers[this.editedIndex], this.editedItem);
       } else {
@@ -334,7 +365,8 @@ export default {
           timer:
             {
               start: time.timer.start.getTime(),
-              end: time.timer.end.getTime()
+              end: time.timer.end.getTime(),
+              timeRemaining: time.timer.timeRemaining
             }
         })));
       this.close()
