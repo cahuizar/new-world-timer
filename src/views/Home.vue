@@ -82,17 +82,18 @@
                                   name="Time remaining"
                                   :rules="{
                                     required: true,
-                                    regex: /^[0-9]?[0-9]:(2[0-3]|[01][0-9]):[0-5][0-9]$/,
-                                    is_not: '00:00:00',
-                                    length: 8
+                                    regex:
+                                      /^[0-9]?[0-9]:(2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/,
+                                    is_not: '00:00:00:00',
+                                    length: 11,
                                   }"
                                 >
                                   <v-text-field
                                     label="Remaining *"
                                     outlined
-                                    v-mask="'##:##:##'"
+                                    v-mask="'##:##:##:##'"
                                     v-model="editedItem.timer.timeRemaining"
-                                    placeholder="DD:HH:MM"
+                                    placeholder="DD:HH:MM:SS"
                                     :error-messages="errors"
                                   />
                                 </validation-provider>
@@ -185,6 +186,7 @@
 </template>
 
 <script>
+import moment from "moment"
 import { required, is_not, regex, length } from "vee-validate/dist/rules";
 import {
   extend,
@@ -211,9 +213,8 @@ extend("regex", {
 
 extend("length", {
   ...length,
-  message: "{_field_} must be 8 characters long",
+  message: "{_field_} must be 11 characters long",
 });
-
 
 export default {
   components: {
@@ -282,8 +283,7 @@ export default {
       ...time,
       timer: {
         start: convertToDate(time.timer.start),
-        end: convertToDate(time.timer.end),
-        timeRemaining: time.timer.timeRemaining,
+        end: convertToDate(time.timer.end)
       },
     }));
   },
@@ -298,6 +298,7 @@ export default {
       endDate.setDate(endDate.getDate() + timeSplit[0]);
       endDate.setHours(endDate.getHours() + timeSplit[1]);
       endDate.setMinutes(endDate.getMinutes() + timeSplit[2]);
+      endDate.setSeconds(endDate.getSeconds() + timeSplit[3]);
       this.editedItem.timer.end = endDate;
       if (this.editedIndex > -1) {
         Object.assign(this.timers[this.editedIndex], this.editedItem);
@@ -309,16 +310,26 @@ export default {
           ...time,
           timer: {
             start: time.timer.start.getTime(),
-            end: time.timer.end.getTime(),
-            timeRemaining: time.timer.timeRemaining,
+            end: time.timer.end.getTime()
           },
         }))
       );
       this.close();
     },
+    addTrailingZero(time) {
+      return time.toString().length === 1 ? `0${time}` : time;
+    },
+    calculateTimeRemaining(endTime) {
+      let endTimeMoment = moment(endTime);
+      let remaining = endTimeMoment.diff(moment())
+      if(remaining <= 0) return '00:00:00:00';
+      let duration = moment.duration(remaining);
+      return `${this.addTrailingZero(duration.days())}:${this.addTrailingZero(duration.hours())}:${this.addTrailingZero(duration.minutes())}:${this.addTrailingZero(duration.seconds())}`
+    },
     editItem(item) {
       this.editedIndex = this.timers.indexOf(item);
       this.editedItem = Object.assign({}, item);
+      this.editedItem.timer.timeRemaining = this.calculateTimeRemaining(this.editedItem.timer.end);
       this.dialog = true;
     },
 
@@ -335,8 +346,7 @@ export default {
           ...time,
           timer: {
             start: time.timer.start.getTime(),
-            end: time.timer.end.getTime(),
-            timeRemaining: time.timer.timeRemaining,
+            end: time.timer.end.getTime()
           },
         }))
       );
@@ -349,8 +359,7 @@ export default {
         ...time,
         timer: {
           start: convertToDate(time.timer.start),
-          end: convertToDate(time.timer.end),
-          timeRemaining: time.timer.timeRemaining,
+          end: convertToDate(time.timer.end)
         },
       }));
       this.dialog = false;
