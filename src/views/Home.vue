@@ -315,6 +315,7 @@ export default {
         }))
       );
       this.close();
+      this.$refs.observer.reset();
     },
     addTrailingZero(time) {
       return time.toString().length === 1 ? `0${time}` : time;
@@ -353,15 +354,6 @@ export default {
       this.closeDelete();
     },
     cancel() {
-      const convertToDate = (a) => new Date(a);
-      let timers = JSON.parse(localStorage.timers);
-      this.timers = timers.map((time) => ({
-        ...time,
-        timer: {
-          start: convertToDate(time.timer.start),
-          end: convertToDate(time.timer.end)
-        },
-      }));
       this.dialog = false;
       this.$nextTick(() => {
         this.editedItem = {
@@ -376,6 +368,7 @@ export default {
         };
         this.editedIndex = -1;
       });
+      this.$refs.observer.reset();
     },
     close() {
       this.dialog = false;
@@ -392,6 +385,7 @@ export default {
         };
         this.editedIndex = -1;
       });
+      this.$refs.observer.reset();
     },
 
     closeDelete() {

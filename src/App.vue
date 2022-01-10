@@ -5,10 +5,20 @@
         <h2>New World</h2>
       </div>
       <v-spacer></v-spacer>
-      <v-btn class="mr-4" icon v-if="!$vuetify.theme.dark" @click="handledarkmode">
+      <v-btn
+        class="mr-4"
+        icon
+        v-if="!$vuetify.theme.dark"
+        @click="handledarkmode"
+      >
         <v-icon color="white">mdi-lightbulb</v-icon>
       </v-btn>
-      <v-btn class="mr-4" icon v-if="$vuetify.theme.dark" @click="handledarkmode">
+      <v-btn
+        class="mr-4"
+        icon
+        v-if="$vuetify.theme.dark"
+        @click="handledarkmode"
+      >
         <v-icon color="yellow darken-3">mdi-lightbulb-outline</v-icon>
       </v-btn>
     </v-app-bar>
@@ -21,33 +31,33 @@
 <script>
 export default {
   name: "App",
-  data () {
+  data() {
     return {
-      darkmode: false
-    }
+      darkmode: false,
+    };
   },
-  created () {
-    if (localStorage.getItem('DarkMode')) {
-      const cookieValue = localStorage.getItem('DarkMode') === 'true';
+  created() {
+    if (localStorage.getItem("DarkMode")) {
+      const cookieValue = localStorage.getItem("DarkMode") === "true";
       this.darkmode = cookieValue;
-      this.$vuetify.theme.dark = cookieValue
+      this.$vuetify.theme.dark = cookieValue;
     } else {
       this.handledarkmode();
     }
   },
   methods: {
-    handledarkmode () {
+    handledarkmode() {
       if (this.darkmode === true) {
-        this.$vuetify.theme.dark = false
-        localStorage.setItem('DarkMode', false);
-        this.darkmode = false
+        this.$vuetify.theme.dark = false;
+        localStorage.setItem("DarkMode", false);
+        this.darkmode = false;
       } else if (this.darkmode === false) {
-        this.$vuetify.theme.dark = true
-        localStorage.setItem('DarkMode', true)
+        this.$vuetify.theme.dark = true;
+        localStorage.setItem("DarkMode", true);
         this.darkmode = true;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss">
