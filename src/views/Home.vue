@@ -25,7 +25,7 @@
               <v-toolbar flat>
                 <v-toolbar-title>All Items</v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-dialog v-model="dialog" max-width="500px">
+                <v-dialog v-model="dialog" max-width="650px">
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
                       color="primary"
@@ -67,13 +67,17 @@
                                   name="Category"
                                   rules="required"
                                 >
-                                  <v-text-field
-                                    outlined
-                                    v-model="editedItem.category"
-                                    label="Category *"
-                                    maxlength="10"
-                                    :error-messages="errors"
-                                  ></v-text-field>
+                                  <v-select
+                                      v-model="editedItem.category"
+                                      :items="categories"
+                                      item-text="text"
+                                      item-value="text"
+                                      label="Category *"
+                                      single-line
+                                      :error-messages="errors"
+                                      outlined
+                                      @change="mapRemainingTime"
+                                  ></v-select>
                                 </validation-provider>
                               </v-col>
                               <v-col cols="12" sm="6" md="4">
@@ -225,6 +229,15 @@ export default {
     dialog: false,
     dialogDelete: false,
     search: "",
+    categories: [
+      { text: 'Cast', value: 'cast', cd: '22 hours' },
+      { text: 'Elite Chest', value: 'eliteChest', cd: '23 hours'  },
+      { text: 'Gypsum', value: 'gypsum', cd: '18 hours' },
+      { text: 'Gypsum Orb', value: 'gypsumOrb', cd: '22 hours' },
+      { text: 'Normal Chest', value: 'normalChest', cd: '1 hour' },
+      { text: 'Orb', value: 'orb', cd: '7 days' },
+      { text: 'Other', value: 'other', cd: '???' },
+    ],
     headers: [
       {
         text: "Name",
@@ -316,6 +329,22 @@ export default {
       );
       this.close();
       this.$refs.observer.reset();
+    },
+    mapRemainingTime() {
+      console.log(this.selected)
+      let timeRemaining;
+      switch (this.editedItem.category) {
+        case 'Oranges':
+          timeRemaining = '';
+          break;
+        case 'Mangoes':
+        case 'Papayas':
+          console.log('Mangoes and papayas are $2.79 a pound.');
+          // expected output: "Mangoes and papayas are $2.79 a pound."
+          break;
+        default:
+          console.log(`Sorry, we are out of ${expr}.`);
+      }
     },
     addTrailingZero(time) {
       return time.toString().length === 1 ? `0${time}` : time;
