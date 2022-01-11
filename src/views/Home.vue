@@ -117,7 +117,6 @@
                             </v-row>
                           </v-container>
                         </v-card-text>
-
                         <v-card-actions>
                           <v-spacer></v-spacer>
                           <v-btn color="error" @click="cancel"> Cancel </v-btn>
@@ -177,7 +176,7 @@
               <v-icon small class="mr-3" @click="editItem(item)">
                 mdi-pencil
               </v-icon>
-              <v-icon small class="mr-3" @click="resetTime(item)"> mdi-refresh </v-icon>
+              <v-icon v-if="item.originalTime" small class="mr-3" @click="resetTime(item)"> mdi-refresh </v-icon>
               <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
             </template>
             <template v-slot:no-data>
@@ -263,6 +262,7 @@ export default {
         timeRemaining: "",
       },
       notes: "",
+      originalTime: ""
     },
     defaultItem: {
       name: "",
@@ -273,6 +273,7 @@ export default {
         timeRemaining: "",
       },
       notes: "",
+      originalTime: ""
     },
   }),
 
@@ -317,6 +318,7 @@ export default {
       this.editedItem.timer.end = endDate;
     },
     submit() {
+      this.editedItem.originalTime = this.editedItem.timer.timeRemaining;
       this.formatTimeRemaining();
       if (this.editedIndex > -1) {
         Object.assign(this.timers[this.editedIndex], this.editedItem);
@@ -328,7 +330,7 @@ export default {
           ...time,
           timer: {
             start: time.timer.start.getTime(),
-            end: time.timer.end.getTime()
+            end: time.timer.end.getTime(),
           },
         }))
       );
@@ -354,7 +356,7 @@ export default {
     resetTime(item) {
       this.editedIndex = this.timers.indexOf(item);
       this.editedItem = Object.assign({}, item);
-      this.mapRemainingTime();
+      this.editedItem.timer.timeRemaining = this.editedItem.originalTime;
       this.formatTimeRemaining();
       Object.assign(this.timers[this.editedIndex], this.editedItem);
       localStorage.timers = JSON.stringify(

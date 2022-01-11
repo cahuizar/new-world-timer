@@ -36,6 +36,9 @@
         >
           New changes: You can now select a category from the dropdown and it will automatically pre-populate the proper timer.
           If you need to simply refresh the timer, you can now do so by clicking on the "<v-icon small > mdi-refresh </v-icon>" icon under the Actions column.
+          <br/>
+          <br/>
+          <b>The refresh icon will not show until you edit your existing timers and select a category from the dropdown.</b>
           <template v-slot:close="{}">
             <v-icon @click="closeAlert">mdi-close</v-icon>
           </template>
@@ -53,7 +56,7 @@ export default {
     return {
       darkMode: false,
       alert: false,
-      alertId: "0001",
+      alertId: "0002",
     };
   },
   created() {
