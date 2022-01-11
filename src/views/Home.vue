@@ -2,7 +2,7 @@
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">
-        <v-card class="mt-10 mx-auto" max-width="800">
+        <v-card class="mt-10 mx-auto" max-width="900">
           <v-card-title>
             Time Tracker
             <v-spacer></v-spacer>
@@ -25,7 +25,7 @@
               <v-toolbar flat>
                 <v-toolbar-title>All Items</v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-dialog v-model="dialog" max-width="500px">
+                <v-dialog v-model="dialog" max-width="650px">
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
                       color="primary"
@@ -67,13 +67,17 @@
                                   name="Category"
                                   rules="required"
                                 >
-                                  <v-text-field
-                                    outlined
-                                    v-model="editedItem.category"
-                                    label="Category *"
-                                    maxlength="10"
-                                    :error-messages="errors"
-                                  ></v-text-field>
+                                  <v-select
+                                      v-model="editedItem.category"
+                                      :items="categories"
+                                      item-text="text"
+                                      item-value="text"
+                                      label="Category *"
+                                      single-line
+                                      :error-messages="errors"
+                                      outlined
+                                      @change="mapRemainingTime"
+                                  ></v-select>
                                 </validation-provider>
                               </v-col>
                               <v-col cols="12" sm="6" md="4">
@@ -170,9 +174,10 @@
               </vue-countdown-timer>
             </template>
             <template v-slot:item.actions="{ item }">
-              <v-icon small class="mr-2" @click="editItem(item)">
+              <v-icon small class="mr-3" @click="editItem(item)">
                 mdi-pencil
               </v-icon>
+              <v-icon small class="mr-3" @click="resetTime(item)"> mdi-refresh </v-icon>
               <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
             </template>
             <template v-slot:no-data>
@@ -225,6 +230,16 @@ export default {
     dialog: false,
     dialogDelete: false,
     search: "",
+    categories: [
+      { text: 'Cast', value: 'cast', cd: '00:22:00:00' },
+      { text: 'Crafting', value: 'crafting', cd: '01:00:00:00' },
+      { text: 'Elite Chest', value: 'eliteChest', cd: '00:23:00:00'  },
+      { text: 'Gypsum', value: 'gypsum', cd: '00:18:00:00' },
+      { text: 'Gypsum Orb', value: 'gypsumOrb', cd: '00:22:00:00' },
+      { text: 'Normal Chest', value: 'normalChest', cd: '00:01:00:00' },
+      { text: 'Orb', value: 'orb', cd: '07:00:00:00' },
+      { text: 'Other', value: 'other', cd: '00:00:00:00' },
+    ],
     headers: [
       {
         text: "Name",
@@ -289,7 +304,7 @@ export default {
   },
 
   methods: {
-    submit() {
+    formatTimeRemaining() {
       this.editedItem.timer.start = new Date();
       let endDate = new Date();
       let timeSplit = this.editedItem.timer.timeRemaining
@@ -300,6 +315,9 @@ export default {
       endDate.setMinutes(endDate.getMinutes() + timeSplit[2]);
       endDate.setSeconds(endDate.getSeconds() + timeSplit[3]);
       this.editedItem.timer.end = endDate;
+    },
+    submit() {
+      this.formatTimeRemaining();
       if (this.editedIndex > -1) {
         Object.assign(this.timers[this.editedIndex], this.editedItem);
       } else {
@@ -317,6 +335,12 @@ export default {
       this.close();
       this.$refs.observer.reset();
     },
+    mapRemainingTime() {
+      let category = this.categories.filter(category => {
+        return category.text === this.editedItem.category
+      });
+      this.editedItem.timer.timeRemaining = category[0].cd;
+    },
     addTrailingZero(time) {
       return time.toString().length === 1 ? `0${time}` : time;
     },
@@ -327,10 +351,29 @@ export default {
       let duration = moment.duration(remaining);
       return `${this.addTrailingZero(duration.days())}:${this.addTrailingZero(duration.hours())}:${this.addTrailingZero(duration.minutes())}:${this.addTrailingZero(duration.seconds())}`
     },
+    resetTime(item) {
+      this.editedIndex = this.timers.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.mapRemainingTime();
+      this.formatTimeRemaining();
+      Object.assign(this.timers[this.editedIndex], this.editedItem);
+      localStorage.timers = JSON.stringify(
+        this.timers.map((time) => ({
+          ...time,
+          timer: {
+            start: time.timer.start.getTime(),
+            end: time.timer.end.getTime()
+          },
+        }))
+      );
+      this.editedItem = this.defaultItem;
+    },
+
     editItem(item) {
       this.editedIndex = this.timers.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.editedItem.timer.timeRemaining = this.calculateTimeRemaining(this.editedItem.timer.end);
+      Object.assign(this.timers[this.editedIndex], this.editedItem);
       this.dialog = true;
     },
 

@@ -9,7 +9,7 @@
         class="mr-4"
         icon
         v-if="!$vuetify.theme.dark"
-        @click="handledarkmode"
+        @click="handleDarkMode"
       >
         <v-icon color="white">mdi-lightbulb</v-icon>
       </v-btn>
@@ -17,12 +17,30 @@
         class="mr-4"
         icon
         v-if="$vuetify.theme.dark"
-        @click="handledarkmode"
+        @click="handleDarkMode"
       >
         <v-icon color="yellow darken-3">mdi-lightbulb-outline</v-icon>
       </v-btn>
     </v-app-bar>
+
     <v-main>
+      <div>
+        <v-alert
+          v-model="alert"
+          dismissible
+          color="cyan"
+          border="left"
+          elevation="2"
+          colored-border
+          icon="mdi-exclamation-thick"
+        >
+          New changes: You can now select a category from the dropdown and it will automatically pre-populate the proper timer.
+          If you need to simply refresh the timer, you can now do so by clicking on the "<v-icon small > mdi-refresh </v-icon>" icon under the Actions column.
+          <template v-slot:close="{}">
+            <v-icon @click="closeAlert">mdi-close</v-icon>
+          </template>
+        </v-alert>
+      </div>
       <router-view />
     </v-main>
   </v-app>
@@ -33,36 +51,49 @@ export default {
   name: "App",
   data() {
     return {
-      darkmode: false,
+      darkMode: false,
+      alert: false,
+      alertId: "0001",
     };
   },
   created() {
-    if (localStorage.getItem("DarkMode")) {
-      const cookieValue = localStorage.getItem("DarkMode") === "true";
-      this.darkmode = cookieValue;
+    if (localStorage.getItem("darkMode")) {
+      const cookieValue = localStorage.getItem("darkMode") === "true";
+      this.darkMode = cookieValue;
       this.$vuetify.theme.dark = cookieValue;
     } else {
-      this.handledarkmode();
+      this.handleDarkMode();
+    }
+
+    if (this.alertId === localStorage.getItem("alertId") && localStorage.getItem("alert")) {
+      const cookieValue = localStorage.getItem("alert") === "true";
+      this.alert = cookieValue;
+      console.log("This banner has already been seen in the past. Alert value:", cookieValue);
+    } else {
+      this.showAlert();
     }
   },
   methods: {
-    handledarkmode() {
-      if (this.darkmode === true) {
+    handleDarkMode() {
+      if (this.darkMode === true) {
         this.$vuetify.theme.dark = false;
-        localStorage.setItem("DarkMode", false);
-        this.darkmode = false;
-      } else if (this.darkmode === false) {
+        localStorage.setItem("darkMode", false);
+        this.darkMode = false;
+      } else if (this.darkMode === false) {
         this.$vuetify.theme.dark = true;
-        localStorage.setItem("DarkMode", true);
-        this.darkmode = true;
+        localStorage.setItem("darkMode", true);
+        this.darkMode = true;
       }
     },
+    showAlert() {
+      localStorage.setItem("alert", true);
+      localStorage.setItem("alertId", this.alertId);
+      this.alert = true;
+    },
+    closeAlert() {
+      localStorage.setItem("alert", false);
+      this.alert = false;
+    }
   },
 };
 </script>
-<style lang="scss">
-.switch-center {
-  display: flex;
-  justify-content: center;
-}
-</style>
