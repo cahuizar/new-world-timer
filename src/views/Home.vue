@@ -68,15 +68,15 @@
                                   rules="required"
                                 >
                                   <v-select
-                                      v-model="editedItem.category"
-                                      :items="categories"
-                                      item-text="text"
-                                      item-value="text"
-                                      label="Category *"
-                                      single-line
-                                      :error-messages="errors"
-                                      outlined
-                                      @change="mapRemainingTime"
+                                    v-model="editedItem.category"
+                                    :items="categories"
+                                    item-text="text"
+                                    item-value="text"
+                                    label="Category *"
+                                    single-line
+                                    :error-messages="errors"
+                                    outlined
+                                    @change="mapRemainingTime"
                                   ></v-select>
                                 </validation-provider>
                               </v-col>
@@ -176,7 +176,14 @@
               <v-icon small class="mr-3" @click="editItem(item)">
                 mdi-pencil
               </v-icon>
-              <v-icon v-if="item.originalTime" small class="mr-3" @click="resetTime(item)"> mdi-refresh </v-icon>
+              <v-icon
+                v-if="item.originalTime"
+                small
+                class="mr-3"
+                @click="resetTime(item)"
+              >
+                mdi-refresh
+              </v-icon>
               <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
             </template>
             <template v-slot:no-data>
@@ -190,7 +197,7 @@
 </template>
 
 <script>
-import moment from "moment"
+import moment from "moment";
 import { required, is_not, regex, length } from "vee-validate/dist/rules";
 import {
   extend,
@@ -230,14 +237,14 @@ export default {
     dialogDelete: false,
     search: "",
     categories: [
-      { text: 'Cast', value: 'cast', cd: '00:22:00:00' },
-      { text: 'Crafting', value: 'crafting', cd: '01:00:00:00' },
-      { text: 'Elite Chest', value: 'eliteChest', cd: '00:23:00:00'  },
-      { text: 'Gypsum', value: 'gypsum', cd: '00:18:00:00' },
-      { text: 'Gypsum Orb', value: 'gypsumOrb', cd: '00:22:00:00' },
-      { text: 'Normal Chest', value: 'normalChest', cd: '00:01:00:00' },
-      { text: 'Orb', value: 'orb', cd: '07:00:00:00' },
-      { text: 'Other', value: 'other', cd: '00:00:00:00' },
+      { text: "Cast", value: "cast", cd: "00:22:00:00" },
+      { text: "Crafting", value: "crafting", cd: "01:00:00:00" },
+      { text: "Elite Chest", value: "eliteChest", cd: "00:23:00:00" },
+      { text: "Gypsum", value: "gypsum", cd: "00:18:00:00" },
+      { text: "Gypsum Orb", value: "gypsumOrb", cd: "00:22:00:00" },
+      { text: "Normal Chest", value: "normalChest", cd: "00:01:00:00" },
+      { text: "Orb", value: "orb", cd: "07:00:00:00" },
+      { text: "Other", value: "other", cd: "00:00:00:00" },
     ],
     headers: [
       {
@@ -262,7 +269,7 @@ export default {
         timeRemaining: "",
       },
       notes: "",
-      originalTime: ""
+      originalTime: "",
     },
     defaultItem: {
       name: "",
@@ -273,7 +280,7 @@ export default {
         timeRemaining: "",
       },
       notes: "",
-      originalTime: ""
+      originalTime: "",
     },
   }),
 
@@ -299,7 +306,7 @@ export default {
       ...time,
       timer: {
         start: convertToDate(time.timer.start),
-        end: convertToDate(time.timer.end)
+        end: convertToDate(time.timer.end),
       },
     }));
   },
@@ -338,8 +345,8 @@ export default {
       this.$refs.observer.reset();
     },
     mapRemainingTime() {
-      let category = this.categories.filter(category => {
-        return category.text === this.editedItem.category
+      let category = this.categories.filter((category) => {
+        return category.text === this.editedItem.category;
       });
       this.editedItem.timer.timeRemaining = category[0].cd;
     },
@@ -348,10 +355,14 @@ export default {
     },
     calculateTimeRemaining(endTime) {
       let endTimeMoment = moment(endTime);
-      let remaining = endTimeMoment.diff(moment())
-      if(remaining <= 0) return '00:00:00:00';
+      let remaining = endTimeMoment.diff(moment());
+      if (remaining <= 0) return "00:00:00:00";
       let duration = moment.duration(remaining);
-      return `${this.addTrailingZero(duration.days())}:${this.addTrailingZero(duration.hours())}:${this.addTrailingZero(duration.minutes())}:${this.addTrailingZero(duration.seconds())}`
+      return `${this.addTrailingZero(duration.days())}:${this.addTrailingZero(
+        duration.hours()
+      )}:${this.addTrailingZero(duration.minutes())}:${this.addTrailingZero(
+        duration.seconds()
+      )}`;
     },
     resetTime(item) {
       this.editedIndex = this.timers.indexOf(item);
@@ -364,7 +375,7 @@ export default {
           ...time,
           timer: {
             start: time.timer.start.getTime(),
-            end: time.timer.end.getTime()
+            end: time.timer.end.getTime(),
           },
         }))
       );
@@ -374,7 +385,9 @@ export default {
     editItem(item) {
       this.editedIndex = this.timers.indexOf(item);
       this.editedItem = Object.assign({}, item);
-      this.editedItem.timer.timeRemaining = this.calculateTimeRemaining(this.editedItem.timer.end);
+      this.editedItem.timer.timeRemaining = this.calculateTimeRemaining(
+        this.editedItem.timer.end
+      );
       Object.assign(this.timers[this.editedIndex], this.editedItem);
       this.dialog = true;
     },
@@ -392,7 +405,7 @@ export default {
           ...time,
           timer: {
             start: time.timer.start.getTime(),
-            end: time.timer.end.getTime()
+            end: time.timer.end.getTime(),
           },
         }))
       );
