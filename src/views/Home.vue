@@ -2,7 +2,7 @@
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">
-        <v-card class="mt-10 mx-auto" max-width="900">
+        <v-card class="mt-10 mx-auto" max-width="1100">
           <v-card-title>
             Time Tracker
             <v-spacer></v-spacer>
@@ -172,6 +172,9 @@
                 </template>
               </vue-countdown-timer>
             </template>
+            <template v-slot:item.endDate="{item}">
+              <span class="red--color">{{endDate(item.timer.end)}}</span>
+            </template>
             <template v-slot:item.actions="{ item }">
               <v-icon small class="mr-3" @click="editItem(item)">
                 mdi-pencil
@@ -255,6 +258,7 @@ export default {
       },
       { text: "Category", value: "category" },
       { text: "CD Timer", value: "timer" },
+      { text: "End Date", value: "endDate", sortable: false },
       { text: "Notes", value: "notes", sortable: false },
       { text: "Actions", value: "actions", sortable: false },
     ],
@@ -287,7 +291,7 @@ export default {
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Timer" : "Edit Timer";
-    },
+    }
   },
 
   watch: {
@@ -312,6 +316,10 @@ export default {
   },
 
   methods: {
+    endDate(end) {
+      let endMoment = moment(end);
+      return moment() >= endMoment ? '' : endMoment.format('MMMM Do YYYY, h:mm:ss a');
+    },
     formatTimeRemaining() {
       this.editedItem.timer.start = new Date();
       let endDate = new Date();
@@ -475,3 +483,8 @@ export default {
   },
 };
 </script>
+<style lang="scss">
+.red--color {
+  color: red;
+}
+</style>
